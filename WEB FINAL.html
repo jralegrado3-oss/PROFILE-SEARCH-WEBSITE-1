@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PROFILE SEARCH WEBSITE</title>
+<style>
+:root {
+  --primary: #007bff;
+  --success: #28a745;
+  --danger: #dc3545;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  padding-bottom: 100px; /* space for footer */
+  background: url('https://images.pexels.com/photos/5088017/pexels-photo-5088017.jpeg') no-repeat center center fixed;
+  background-size: cover;
+  position: relative;
+}
+
+/* Dark overlay for readability */
+body::before {
+  content: "";
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: -1;
+}
+
+/* SPLASH */
+#splashScreen {
+  position: fixed; top:0; left:0; width:100%; height:100%;
+  background:#fffefe; display:flex; flex-direction:column; justify-content:center; align-items:center;
+  z-index:99999; transition: opacity 1.5s ease;
+}
+#splashLogo { 
+  width:200px; height:200px; margin-bottom:20px; border-radius:50%; object-fit:cover; 
+  animation: scaleUp 2s ease-in-out; 
+}
+#splashName { font-size:3em; color:var(--primary); animation: fadeIn 2s ease-in-out; }
+@keyframes scaleUp {0%{transform:scale(1.5);}100%{transform:scale(1);}}
+@keyframes fadeIn {0%{opacity:0;}100%{opacity:1;}}
+
+/* HEADER */
+header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:90%;
+  max-width:1200px;
+  background: rgb(255, 255, 255);
+  padding:15px 20px;
+  border-radius:15px;
+  margin:20px auto;
+  box-shadow:0 4px 10px rgba(0,0,0,0.15);
+  backdrop-filter: blur(6px);
+  position:sticky;
+  top:0;
+  z-index:999;
+  transition: transform 0.3s ease;
+}
+header img { height:60px; margin:0 10px; }
+.header-center { text-align:center; flex:1; margin:0 20px; }
+.header-center h1 { font-size:1.8em; margin-bottom:10px; color:#222; }
+.header-center p { font-size:0.95em; margin:5px 0; }
+.header-center .tagline { font-weight:bold; color:#0468eb; margin-top:5px; }
+
+/* LOGIN FORM */
+#loginScreen { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); justify-content:center; align-items:center; z-index:99998; }
+#loginScreen .login-box { background:white; padding:30px; border-radius:15px; text-align:center; width:90%; max-width:400px; box-shadow:0 4px 12px rgba(0,0,0,0.3); }
+#loginScreen input { width:100%; padding:10px; margin:15px 0; border-radius:10px; border:1px solid #ccc; font-size:16px; }
+#loginScreen button { width:100%; padding:10px; background:var(--primary); color:#fff; border:none; border-radius:10px; font-size:16px; cursor:pointer; }
+#loginScreen button:hover { background:#0066d3; }
+
+/* ADD BUTTON */
+button { cursor:pointer; border:none; font-weight:600; border-radius:10px; transition: all 0.2s ease; }
+.add-btn { background: var(--success); color:#fff; padding:12px 25px; font-size:16px; margin:20px auto; display:block; }
+.add-btn:hover { background:#03eb7f; transform:scale(1.05); }
+
+/* FORM */
+.form-container { display:none; flex-direction:column; align-items:center; background: rgba(255,255,255,0.9); padding:25px; border-radius:15px; margin:20px auto; width:90%; max-width:600px; box-shadow:0 4px 12px rgba(0,0,0,0.2); }
+form { width:100%; display:flex; flex-direction:column; gap:12px; }
+form input, form select { padding:10px 15px; border:2px solid #ccc; border-radius:10px; font-size:15px;}
+form input:focus, form select:focus { border-color:var(--primary); box-shadow:0 0 8px rgba(0,123,255,0.3);}
+form button { background: var(--primary); color:white; padding:10px 15px; }
+form button:hover { background:#0066d3; }
+
+/* SEARCH */
+#searchInput { width:90%; max-width:500px; padding:10px 15px; border-radius:10px; border:2px solid #ccc; font-size:15px; margin:20px auto; display:block; }
+
+/* PROFILES */
+.profiles-section { width:90%; max-width:1000px; margin:30px auto; padding-top:20px; }
+.profiles-section h2 { background: rgba(255,255,255,0.85); padding:10px 15px; border-radius:10px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.profiles { display:grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap:20px; }
+.profile-card { background: rgba(255,255,255,0.95); padding:15px; border-radius:15px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.15); transition: transform 0.3s ease; cursor:pointer; }
+.profile-card:hover { transform: translateY(-5px); }
+.profile-card img { width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:10px; }
+.profile-card h3 { margin:5px 0; color:#333; }
+.profile-card p { margin:2px 0; color:#555; font-size:14px; }
+.card-buttons { margin-top:10px; display:flex; justify-content:center; gap:10px; }
+.edit-btn { background:var(--primary); color:white; padding:6px 12px; }
+.edit-btn:hover { background:#4a5cf7; }
+.delete-btn { background:var(--danger); color:white; padding:6px 12px; }
+.delete-btn:hover { background:#c82333; }
+
+/* PRIVACY MODAL */
+#privacyModal { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; align-items:center; justify-content:center; z-index:9999; background: rgba(0,0,0,0.6); }
+.modal-content { background:white; padding:30px; border-radius:15px; max-width:500px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.3);}
+#acceptPrivacy { background: var(--success); color:white; padding:10px 20px; }
+
+/* FOOTER */
+footer {
+  width: 100%;
+  background: rgba(0, 64, 128, 0.89);
+  color: white;
+  text-align: center;
+  padding: 15px 0;
+  font-size: 16px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
+  backdrop-filter: blur(5px);
+  z-index: 999;
+}
+
+/* MEDIA QUERIES */
+@media (max-width:768px){ 
+  header { flex-direction:column; text-align:center; gap:10px; }
+  .profile-card { padding:10px; }
+}
+@media (max-width:480px){
+  header img { height:40px; margin:5px; }
+  #searchInput { width:95%; } 
+  .add-btn { font-size:14px; padding:10px 20px; }
+  .profiles-section { padding-top:100px; }
+}
+
+/* ---------- MOBILE RESPONSIVE ---------- */
+@media (max-width: 1024px) {
+  header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .header-center h1 {
+    font-size: 1.5em;
+  }
+  .header-center p, .header-center .tagline {
+    font-size: 0.9em;
+  }
+  header img {
+    max-height: 60px;
+    margin: 5px;
+  }
+  .add-btn, #darkModeToggle {
+    width: 90%;
+    margin: 10px auto;
+    font-size: 14px;
+    padding: 10px 15px;
+  }
+  #searchInput {
+    width: 120%;
+    font-size: 14px;
+  }
+  .profiles-section {
+    width: 95%;
+    margin: 20px auto;
+  }
+  .profile-card {
+    padding: 12px;
+    font-size: 14px;
+  }
+  .form-container {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+/* ---------- SMALL PHONES ---------- */
+@media (max-width: 480px) {
+  header {
+    flex-direction: column;
+    gap: 10px;
+  }
+  header img {
+    height: 40px;
+    margin: 5px 0;
+  }
+  .header-center h1 {
+    font-size: 1.2em;
+  }
+  .header-center p, .header-center .tagline {
+    font-size: 0.8em;
+  }
+  #searchInput {
+    width: 95%;
+    font-size: 13px;
+  }
+  .add-btn, #darkModeToggle {
+    width: 95%;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  .profiles {
+    grid-template-columns: 1fr; /* one card per row for small screens */
+    gap: 15px;
+  }
+  .profile-card img {
+    width: 80px;
+    height: 80px;
+  }
+  .form-container form input, .form-container form select {
+    padding: 8px 10px;
+    font-size: 14px;
+  }
+}
+
+/* ---------- SPLASH SCREEN RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  #splashScreen {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+  }
+  #splashLogo {
+    width: 200px;
+    height: 200px;
+  }
+  #splashName {
+    font-size: 2em; /* smaller font for tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  #splashLogo {
+    width: 230px;
+    height: 230px;
+  }
+  #splashName {
+    font-size: em; /* smaller for small phones */
+  }
+}
+
+/* ---------- HEADER RESPONSIVE ---------- */
+@media (max-width: 768px) {
+  .header-center h1 { font-size: 1.4em; }
+  .header-center p, .header-center .tagline { font-size: 0.85em; }
+}
+
+@media (max-width: 480px) {
+  .header-center h1 { font-size: 1.1em; }
+  .header-center p, .header-center .tagline { font-size: 0.75em; }
+  header img { height: 40px; margin: 5px 0; }
+}
+
+/* ---------- HEADER RESPONSIVE ---------- */
+@media (max-width: 1024px) {
+  .header-center h1 {
+    font-size: 1.5em; /* smaller than desktop */
+  }
+  .header-center p {
+    font-size: 0.3em;
+    line-height: 1em; /* easier to read */
+  }
+  .header-center .tagline {
+    font-size: 0.9em;
+    line-height: 1em;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-center h1 {
+    font-size: 1.3em;
+  }
+  .header-center p {
+    font-size: 0.85em;
+  }
+  .header-center .tagline {
+    font-size: 0.85em;
+  }
+}
+
+@media (max-width: 480px) {
+  .header-center h1 {
+    font-size: 1.1em; /* small phones */
+  }
+  .header-center p {
+    font-size: 0.7em;
+  }
+  .header-center .tagline {
+    font-size: 0.7em;
+  }
+  header img {
+    height: 20px; /* smaller logos on phones */
+  }
+}
+
+
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splashScreen">
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQq7-nYZrebLzwkQckpltoW3JoWBKIkOOryA&s" alt="Logo" id="splashLogo">
+  <h1 id="splashName">PROFILE SEARCH WEBSITE</h1>
+</div>
+
+<!-- LOGIN FORM -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <input type="password" id="adminPassword" placeholder="Enter Password">
+    <button id="loginBtn">Log In for admin</button>
+    <p style="margin-top:10px; font-size:14px; color:#000;">Don't put password for Guest Mode</p>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header>
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQq7-nYZrebLzwkQckpltoW3JoWBKIkOOryA&s" style="height:80px; width:auto;">
+  <div class="header-center">
+    <h1>Welcome to the Profile Search Portal</h1>
+    <p>A digital platform designed for easy access to student profiles, academic records, and class information to support teachers, learners, and administrators in monitoring and planning educational activities efficiently.</p>
+    <p class="tagline">For Senior High School Students (Grades 11 & 12) – TVL, Academic, and Technical Tracks</p>
+  </div>
+  <img src="https://cdn.freelogovectors.net/wp-content/uploads/2018/04/deped-logo_freelogovectors.net_.png" alt="DepEd Logo">
+</header>
+
+<!-- PRIVACY -->
+<div id="privacyModal">
+  <div class="modal-content">
+    <h2>Data Privacy Notice</h2>
+    <p>By using this system, you agree to the collection and processing of personal information according to the Data Privacy Act. Profiles may contain sensitive information.</p>
+    <button id="acceptPrivacy">I Agree</button>
+  </div>
+</div>
+
+<!-- ADD BUTTON -->
+<button class="add-btn" id="toggleForm">➕ Add a Profile</button>
+
+
+
+<!-- FORM -->
+<div class="form-container" id="profileForm">
+  <h2>Add / Edit Profile</h2>
+  <form id="profileData">
+    <select id="role" required>
+      <option value="" disabled selected>Select Role</option>
+      <option value="Teacher">Teacher</option>
+      <option value="Learner">Learner</option>
+    </select>
+    <input type="text" id="name" placeholder="Full Name" required>
+    <input type="text" id="subject" placeholder="Subject (Teacher) / Section (Learner)" required>
+    <input type="email" id="email" placeholder="Email Address" required>
+    <input type="file" id="imageUpload" accept="image/*">
+    <div id="learnerExtra" style="display:none;">
+      <input type="text" id="guardian" placeholder="Guardian's Name">
+      <input type="text" id="emergency" placeholder="Emergency Phone">
+      <input type="text" id="schoolYear" placeholder="School Year">
+      <select id="learnerTeacher"><option value="" disabled selected>Select Teacher</option></select>
+    </div>
+    <button type="submit">Save Profile</button>
+  </form>
+</div>
+
+<!-- SEARCH -->
+<input type="text" id="searchInput" placeholder="🔍 Search by name or role...">
+
+<!-- PROFILES -->
+<div class="profiles-section">
+  <h2>Teachers</h2>
+  <div class="profiles" id="teacherList"></div>
+  <h2>Learners</h2>
+  <div class="profiles" id="learnerList"></div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  &copy; 2025-2026 Profile Search Portal | All Rights Reserved
+</footer>
+
+<script>
+// ---------- VARIABLES ----------
+const ADMIN_PASSWORD = "123";
+let teachers = [], learners = [], isAdmin=false, editingData=null;
+
+// ---------- SPLASH & LOGIN ----------
+window.addEventListener("load", ()=>{
+  setTimeout(()=>{
+    const splash=document.getElementById("splashScreen");
+    splash.style.opacity=0;
+    setTimeout(()=>{
+      splash.style.display="none";
+      const loginScreen=document.getElementById("loginScreen");
+      loginScreen.style.display="flex";
+
+      document.getElementById("loginBtn").addEventListener("click", ()=>{
+        const password=document.getElementById("adminPassword").value;
+        if(password===ADMIN_PASSWORD){ isAdmin=true; alert("Admin mode enabled. You can now add/edit profiles."); }
+        else { isAdmin=false; alert("Guest mode enabled. You can view profiles only."); }
+        loginScreen.style.display="none";
+
+        if(localStorage.getItem("teachers")) teachers=JSON.parse(localStorage.getItem("teachers"));
+        if(localStorage.getItem("learners")) learners=JSON.parse(localStorage.getItem("learners"));
+        teachers.forEach(t=> document.getElementById("teacherList").appendChild(createCard(t)));
+        learners.forEach(s=> document.getElementById("learnerList").appendChild(createCard(s)));
+        teachers.forEach(t => attachTeacherClick(t.card,t.name));
+      });
+    },500);
+  },2000);
+});
+
+// ---------- PRIVACY ----------
+document.getElementById("acceptPrivacy").addEventListener("click", ()=> document.getElementById("privacyModal").style.display="none");
+
+// ---------- FORM TOGGLE ----------
+document.getElementById("toggleForm").addEventListener("click", ()=>{
+  if(!isAdmin){ alert("Only admin can add/edit profiles!"); return; }
+  const form=document.getElementById("profileForm");
+  form.style.display=form.style.display==="flex"?"none":"flex";
+});
+
+// ---------- ROLE CHANGE ----------
+document.getElementById("role").addEventListener("change", function(){
+  const extra=document.getElementById("learnerExtra");
+  if(this.value==="Learner"){ extra.style.display="block"; populateTeacherDropdown(); } 
+  else{ extra.style.display="none"; }
+});
+
+function populateTeacherDropdown(){
+  const dropdown=document.getElementById("learnerTeacher");
+  dropdown.innerHTML='<option value="" disabled selected>Select Teacher</option>';
+  teachers.forEach(t=>{ const option=document.createElement("option"); option.value=t.name; option.textContent=t.name; dropdown.appendChild(option); });
+}
+
+// ---------- ADD / EDIT PROFILE ----------
+document.getElementById("profileData").addEventListener("submit", e=>{
+  e.preventDefault();
+  if(!isAdmin){ alert("Only admin can add/edit profiles!"); return; }
+
+  const role=document.getElementById("role").value;
+  const name=document.getElementById("name").value;
+  const subject=document.getElementById("subject").value;
+  const email=document.getElementById("email").value;
+  const imageInput=document.getElementById("imageUpload");
+  const guardian=document.getElementById("guardian").value;
+  const emergency=document.getElementById("emergency").value;
+  const schoolYear=document.getElementById("schoolYear").value;
+  const teacherAssigned=document.getElementById("learnerTeacher").value;
+
+  const saveProfile=(imageURL)=>{
+    const data={role,name,subject,email,image:imageURL,guardian,emergency,schoolYear,teacher:teacherAssigned};
+    if(editingData){ Object.assign(editingData,data); renderCard(editingData); editingData=null; }
+    else {
+      const card=createCard(data);
+      if(role==="Teacher"){ document.getElementById("teacherList").appendChild(card); teachers.push({...data,card}); attachTeacherClick(card,name); }
+      else { document.getElementById("learnerList").appendChild(card); learners.push({...data,card}); }
+    }
+    localStorage.setItem("teachers",JSON.stringify(teachers.map(t=>({...t,card:undefined}))));
+    localStorage.setItem("learners",JSON.stringify(learners.map(s=>({...s,card:undefined}))));
+    document.getElementById("profileData").reset();
+    document.getElementById("learnerExtra").style.display="none";
+    document.getElementById("profileForm").style.display="none";
+  };
+
+  if(imageInput.files && imageInput.files[0]){
+    const reader=new FileReader();
+    reader.onload=function(e){ saveProfile(e.target.result); };
+    reader.readAsDataURL(imageInput.files[0]);
+  } else saveProfile("https://via.placeholder.com/100");
+});
+
+// ---------- CREATE / RENDER CARDS ----------
+function createCard(data){
+  const card=document.createElement("div"); 
+  card.classList.add("profile-card");
+  data.card=card;
+  renderCardContent(card,data);
+  attachCardEvents(card,data);
+  return card;
+}
+function renderCardContent(card,data){
+  card.innerHTML=`
+    <img src="${data.image}" alt="${data.name}">
+    <h3>${data.name}</h3>
+    <p><strong>${data.role}</strong></p>
+    <p>${data.subject}</p>
+    ${data.role==="Learner"?`<p>Teacher: ${data.teacher}</p>`:""}
+    <div class="card-buttons"></div>
+  `;
+}
+function attachCardEvents(card, data){
+  let btnContainer = card.querySelector(".card-buttons");
+  btnContainer.innerHTML="";
+
+  const btnView = document.createElement("button");
+  btnView.textContent="View Full Details";
+  btnView.style.background="#007bff"; btnView.style.color="#fff"; btnView.style.padding="6px 12px"; btnView.style.borderRadius="8px";
+  btnContainer.appendChild(btnView);
+  btnView.addEventListener("click", showFullDetails);
+
+  if(data.role==="Teacher"){
+    const btnExport = document.createElement("button");
+    btnExport.textContent = "📤 Export learners";
+    btnExport.style.background="#28a745"; btnExport.style.color="#fff"; btnExport.style.padding="6px 12px"; btnExport.style.borderRadius="8px";
+    btnContainer.appendChild(btnExport);
+    btnExport.addEventListener("click", ()=>{ if(!isAdmin){ alert("Only admin can export learner lists!"); return; } exportlearners(data.name); });
+  }
+
+  function showFullDetails(){
+    if(!isAdmin){ alert("Full details only for admin!"); return; }
+    const originalContent = card.innerHTML;
+    card.innerHTML=`
+      <img src="${data.image}" alt="${data.name}">
+      <h3>${data.name}</h3>
+      <p><strong>${data.role}</strong></p>
+      <p>${data.subject}</p>
+      <p>${data.email}</p>
+      ${data.role==="Learner"?`<hr><p>Guardian: ${data.guardian}</p><p>Emergency: ${data.emergency}</p><p>School Year: ${data.schoolYear}</p><p>Teacher: ${data.teacher}</p>`:""}
+      <div class="card-buttons">
+        <button class="edit-btn">✏️ Edit</button>
+        <button class="delete-btn">🗑️ Delete</button>
+        <button class="close-btn">❌ Close</button>
+      </div>
+    `;
+    attachEditDelete(card,data);
+    card.querySelector(".close-btn").addEventListener("click", ()=>{
+      card.innerHTML = originalContent;
+      attachCardEvents(card,data);
+    });
+  }
+}
+
+function attachEditDelete(card,data){
+  card.querySelector(".delete-btn")?.addEventListener("click",()=>{
+    card.remove();
+    if(data.role==="Teacher") teachers=teachers.filter(t=>t.name!==data.name);
+    else learners=learners.filter(s=>s.name!==data.name);
+    localStorage.setItem("teachers",JSON.stringify(teachers.map(t=>({...t,card:undefined}))));
+    localStorage.setItem("learners",JSON.stringify(learners.map(s=>({...s,card:undefined}))));
+  });
+  card.querySelector(".edit-btn")?.addEventListener("click",()=>{
+    editingData=data;
+    document.getElementById("profileForm").style.display="flex";
+    document.getElementById("role").value=data.role;
+    document.getElementById("name").value=data.name;
+    document.getElementById("subject").value=data.subject;
+    document.getElementById("email").value=data.email;
+    document.getElementById("learnerExtra").style.display=data.role==="Learner"?"block":"none";
+    if(data.role==="Learner"){
+      document.getElementById("guardian").value=data.guardian;
+      document.getElementById("emergency").value=data.emergency;
+      document.getElementById("schoolYear").value=data.schoolYear;
+      populateTeacherDropdown();
+      document.getElementById("learnerTeacher").value=data.teacher;
+    }
+  });
+}
+
+// ---------- FILTER STUDENTS BY TEACHER ----------
+function attachTeacherClick(card,teacherName){
+  let filtered=false;
+  card.addEventListener("click", (e)=>{
+    if(e.target.tagName==="BUTTON") return;
+    if(!filtered){ learners.forEach(s=> s.card.style.display=(s.teacher===teacherName)?"block":"none"); filtered=true; }
+    else { learners.forEach(s=> s.card.style.display="block"); filtered=false; }
+  });
+}
+
+function renderCard(data){
+  let card=null;
+  if(data.role==="Teacher") card=teachers.find(t=>t.name===data.name)?.card;
+  else card=learners.find(s=>s.name===data.name)?.card;
+  if(card){ renderCardContent(card,data); attachCardEvents(card,data);}
+}
+
+// ---------- SEARCH ----------
+document.getElementById("searchInput").addEventListener("input", function(){
+  const query=this.value.toLowerCase();
+  teachers.forEach(t=> t.card.style.display=t.card.textContent.toLowerCase().includes(query)?"block":"none");
+  learners.forEach(s=> s.card.style.display=s.card.textContent.toLowerCase().includes(query)?"block":"none");
+});
+
+// ---------- EXPORT ----------
+function exportlearners(teacherName){
+  const assignedlearners = learners.filter(s => s.teacher === teacherName);
+  if(assignedlearners.length === 0){ alert("No learners assigned to this teacher."); return; }
+
+  let csv = "Name,Email,Section,School Year\n";
+  assignedlearners.forEach(s=>{
+    csv += `"${s.name}","${s.email}","${s.subject}","${s.schoolYear}"\n`;
+  });
+
+  const blob = new Blob(["\uFEFF" + csv], {type: "text/csv;charset=utf-8"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${teacherName}_learners.csv`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ---------- HEADER HIDE ON SCROLL ----------
+let lastScroll = 0;
+const headerEl = document.querySelector("header");
+window.addEventListener("scroll", () => {
+  const currentScroll = window.pageYOffset;
+  if (currentScroll > lastScroll && currentScroll > headerEl.offsetHeight) {
+    // scrolling down -> hide
+    headerEl.style.transform = "translateY(-120%)";
+  } else {
+    // scrolling up -> show
+    headerEl.style.transform = "translateY(0)";
+  }
+  lastScroll = currentScroll;
+});
+
+
+
+</script>
+</body>
+</html>
